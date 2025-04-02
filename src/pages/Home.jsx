@@ -86,75 +86,75 @@ const testData = {
         "Emailadresse": "stephan@x-cite.de"
       }
     },
-    "Strom Response": {
-      "Wohnungsübergabeprotokoll": {
-        "Art der Übergabe": "Einzug",
-        "Datum der Übergabe": "05.11.2024"
-      },
-      "Mieter": {
-        "Anrede": "Frau",
-        "Titel": "Keine Angaben",
-        "Name": "Katze",
-        "Vorname": "Killer",
-        "Geburtsdatum": "05.11.2006",
-        "Strasse": "Herzbergstrasse",
-        "Hausnummer": "2-4",
-        "Plz": "61138",
-        "Ort": "Niederdorfelden",
-        "Adresszusatz": "",
-        "Rufnummer": "+49 12122222",
-        "Mobile Nummer": "+49 55555555555",
-        "Emailadresse": "stephan@x-cite.de"
-      },
-      "Wohnung": {
-        "Strasse": "Herzbergstrasse",
-        "Hausnummer": "2-4",
-        "Adresszusatz": "1. OG",
-        "Plz": "61138",
-        "Ort": "Niederdorfelden"
-      },
-      "Zählernummer": "1LOG0043015813",
-      "Zählerstand HT": "",
-      "Zählerstand NT": "",
-      "Zählertyp": "Eintarif Stromzähler",
-      "Installationsort": "Keller",
-      "Marketlokationsnummer": "TEST123",
-      "Produkttyp": "strom"
-    },
-    "Gas Response": {
-      "Wohnungsübergabeprotokoll": {
-        "Art der Übergabe": "Einzug",
-        "Datum der Übergabe": "05.11.2024"
-      },
-      "Mieter": {
-        "Anrede": "Frau",
-        "Titel": "Keine Angaben",
-        "Name": "Katze",
-        "Vorname": "Killer",
-        "Geburtsdatum": "05.11.2006",
-        "Strasse": "Herzbergstrasse",
-        "Hausnummer": "2-4",
-        "Plz": "61138",
-        "Ort": "Niederdorfelden",
-        "Adresszusatz": "",
-        "Rufnummer": "+49 12122222",
-        "Mobile Nummer": "+49 55555555555",
-        "Emailadresse": "stephan@x-cite.de"
-      },
-      "Wohnung": {
-        "Strasse": "Herzbergstrasse",
-        "Hausnummer": "2-4",
-        "Adresszusatz": "1. OG",
-        "Plz": "61138",
-        "Ort": "Niederdorfelden"
-      },
-      "Zählernummer": "1LOG0043015813",
-      "Zählerstand": "454545",
-      "Zählertyp": "",
-      "Installationsort": "Flur",
-      "Marketlokationsnummer": "",
-      "Produkttyp": "gas"
-    }
+    // "Strom Response": {
+    //   "Wohnungsübergabeprotokoll": {
+    //     "Art der Übergabe": "Einzug",
+    //     "Datum der Übergabe": "05.11.2024"
+    //   },
+    //   "Mieter": {
+    //     "Anrede": "Frau",
+    //     "Titel": "Keine Angaben",
+    //     "Name": "Katze",
+    //     "Vorname": "Killer",
+    //     "Geburtsdatum": "05.11.2006",
+    //     "Strasse": "Herzbergstrasse",
+    //     "Hausnummer": "2-4",
+    //     "Plz": "61138",
+    //     "Ort": "Niederdorfelden",
+    //     "Adresszusatz": "",
+    //     "Rufnummer": "+49 12122222",
+    //     "Mobile Nummer": "+49 55555555555",
+    //     "Emailadresse": "stephan@x-cite.de"
+    //   },
+    //   "Wohnung": {
+    //     "Strasse": "Herzbergstrasse",
+    //     "Hausnummer": "2-4",
+    //     "Adresszusatz": "1. OG",
+    //     "Plz": "61138",
+    //     "Ort": "Niederdorfelden"
+    //   },
+    //   "Zählernummer": "1LOG0043015813",
+    //   "Zählerstand HT": "",
+    //   "Zählerstand NT": "",
+    //   "Zählertyp": "Eintarif Stromzähler",
+    //   "Installationsort": "Keller",
+    //   "Marketlokationsnummer": "TEST123",
+    //   "Produkttyp": "strom"
+    // },
+    // "Gas Response": {
+    //   "Wohnungsübergabeprotokoll": {
+    //     "Art der Übergabe": "Einzug",
+    //     "Datum der Übergabe": "05.11.2024"
+    //   },
+    //   "Mieter": {
+    //     "Anrede": "Frau",
+    //     "Titel": "Keine Angaben",
+    //     "Name": "Katze",
+    //     "Vorname": "Killer",
+    //     "Geburtsdatum": "05.11.2006",
+    //     "Strasse": "Herzbergstrasse",
+    //     "Hausnummer": "2-4",
+    //     "Plz": "61138",
+    //     "Ort": "Niederdorfelden",
+    //     "Adresszusatz": "",
+    //     "Rufnummer": "+49 12122222",
+    //     "Mobile Nummer": "+49 55555555555",
+    //     "Emailadresse": "stephan@x-cite.de"
+    //   },
+    //   "Wohnung": {
+    //     "Strasse": "Herzbergstrasse",
+    //     "Hausnummer": "2-4",
+    //     "Adresszusatz": "1. OG",
+    //     "Plz": "61138",
+    //     "Ort": "Niederdorfelden"
+    //   },
+    //   "Zählernummer": "1LOG0043015813",
+    //   "Zählerstand": "454545",
+    //   "Zählertyp": "",
+    //   "Installationsort": "Flur",
+    //   "Marketlokationsnummer": "",
+    //   "Produkttyp": "gas"
+    // }
   }
 };
 
@@ -213,7 +213,7 @@ const ResponseSection = ({ title, data }) => {
   if (!data) return null;
 
   return (
-    <Accordion sx={{ mt: 2 }}>
+    <Accordion sx={{ mt: 2 }} defaultExpanded={true}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography sx={{ fontWeight: "medium" }}>{title}</Typography>
       </AccordionSummary>
@@ -392,11 +392,14 @@ function Home() {
   };
 
   // When results exist, display the result view; otherwise, show the form.
+ // ...existing code...
+
+  // When results exist, display the result view; otherwise, show the form.
   if (result) {
     return (
-      <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 }, px: { xs: 2, md: 4 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, px: { xs: 2, md: 4 } }}>
         <Paper sx={{ p: { xs: 2, md: 4 } }}>
-          <Typography variant="h4" align="center" gutterBottom>
+          <Typography variant="h6" align="center" gutterBottom>
             Background Check Results
           </Typography>
           <Typography variant="subtitle1" align="center" color="textSecondary" gutterBottom>
@@ -407,11 +410,72 @@ function Home() {
           <TraceViewer />
 
           {result.data && (
-            <>
-              <ResponseSection title="Kaution Response" data={result.data["Kaution Response"]} />
-              <ResponseSection title="Strom Response" data={result.data["Strom Response"]} />
-              <ResponseSection title="Gas Response" data={result.data["Gas Response"]} />
-            </>
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: { xs: 'column', md: 'row' },
+              gap: 3,
+              mt: 3
+            }}>
+              {/* Left section - Kautionsfrei */}
+              <Box sx={{ 
+                flex: 1, 
+                bgcolor: 'rgba(245, 245, 245, 0.5)', 
+                p: 2, 
+                borderRadius: 2,
+                border: '1px solid #e0e0e0' 
+              }}>
+                <Box sx={{ 
+                  mb: 2, 
+                  pb: 1, 
+                  borderBottom: '1px solid #e0e0e0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 1
+                }}>
+                  <Typography variant="h6" sx={{ color: '#2e7d32' }}>
+                    Kautionsfrei
+                  </Typography>
+                </Box>
+                <ResponseSection 
+                  title="Kaution Response" 
+                  data={result.data["Kaution Response"]} 
+                />
+              </Box>
+
+              {/* Right section - X-cite */}
+              <Box sx={{ 
+                flex: 1, 
+                bgcolor: 'rgba(245, 245, 245, 0.5)', 
+                p: 2, 
+                borderRadius: 2,
+                border: '1px solid #e0e0e0' 
+              }}>
+                <Box sx={{ 
+                  mb: 2, 
+                  pb: 1, 
+                  borderBottom: '1px solid #e0e0e0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 1
+                }}>
+                  <Typography variant="h6" sx={{ color: '#1976d2' }}>
+                    X-cite
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <ResponseSection 
+                    title="Strom Response" 
+                    data={result.data["Strom Response"]} 
+                  />
+                  <ResponseSection 
+                    title="Gas Response" 
+                    data={result.data["Gas Response"]} 
+                  />
+                </Box>
+              </Box>
+            </Box>
           )}
           <Box
             sx={{
@@ -434,26 +498,6 @@ function Home() {
               }}
             >
               New Check
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<EmailIcon />}
-              onClick={() => {
-                if (tracing) addTrace("Email report requested");
-                alert("Report would be emailed (pending implementation)");
-              }}
-            >
-              Email Report
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<PrintIcon />}
-              onClick={() => {
-                if (tracing) addTrace("Print report requested");
-                window.print();
-              }}
-            >
-              Print Report
             </Button>
           </Box>
         </Paper>
@@ -489,7 +533,7 @@ function Home() {
           <Box
             component="form"
             onSubmit={handleSubmit}
-            sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+            sx={{ display: "flex", flexDirection: "row", gap: 3 }}
           >
             <TextField
               fullWidth
@@ -499,12 +543,12 @@ function Home() {
               onChange={(e) => setToken(e.target.value)}
               required
             />
-            <FormControlLabel
+            {/* <FormControlLabel
               control={<Switch checked={tracing} onChange={(e) => setTracing(e.target.checked)} />}
               label="Enable request tracing"
-            />
+            /> */}
             <Button type="submit" variant="contained" disabled={loading} sx={{ height: "56px" }}>
-              {loading ? <CircularProgress size={24} color="inherit" /> : "Check Background"}
+              {loading ? <CircularProgress size={24} color="inherit" /> : "Send"}
             </Button>
           </Box>
         </CardContent>
