@@ -18,10 +18,6 @@ import {
   ToggleButtonGroup,
   Switch,
   FormControlLabel,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
@@ -162,28 +158,32 @@ const testData = {
   }
 };
 
-// Helper function to render nested objects recursively
+// Helper function to render nested objects recursively with responsive spacing.
 const renderNestedObject = (obj, level = 0) => {
   if (!obj || typeof obj !== "object") return null;
-  
+
   return Object.entries(obj).map(([key, value]) => {
-    // Check if the value is an object
     const isObject = value && typeof value === "object";
-    
+
     return (
-      <Box key={key} sx={{ ml: level * 2, mb: isObject ? 2 : 0.5 }}>
-        {/* Render section header for nested objects */}
+      <Box
+        key={key}
+        sx={{
+          ml: { xs: level * 1, sm: level * 2 },
+          mb: isObject ? 2 : 0.5,
+        }}
+      >
         {isObject ? (
           <>
-            <Typography 
-              variant={level === 0 ? "subtitle1" : "subtitle2"} 
-              sx={{ 
-                fontWeight: "medium", 
-                mt: 1, 
+            <Typography
+              variant={level === 0 ? "subtitle1" : "subtitle2"}
+              sx={{
+                fontWeight: "medium",
+                mt: 1,
                 mb: 1,
                 borderBottom: level === 0 ? 1 : 0,
                 borderColor: "divider",
-                pb: level === 0 ? 0.5 : 0
+                pb: level === 0 ? 0.5 : 0,
               }}
             >
               {key}
@@ -191,9 +191,11 @@ const renderNestedObject = (obj, level = 0) => {
             {renderNestedObject(value, level + 1)}
           </>
         ) : (
-          // Render key-value pairs for leaf nodes
-          <Typography variant="body2" sx={{ display: 'flex' }}>
-            <Box component="span" sx={{ fontWeight: "medium", width: '40%', flexShrink: 0 }}>
+          <Typography variant="body2" sx={{ display: "flex" }}>
+            <Box
+              component="span"
+              sx={{ fontWeight: "medium", width: { xs: "35%", sm: "40%" }, flexShrink: 0 }}
+            >
               {key}:
             </Box>
             <Box component="span" sx={{ pl: 1 }}>
@@ -206,7 +208,7 @@ const renderNestedObject = (obj, level = 0) => {
   });
 };
 
-// Response Section Component for displaying hierarchical data
+// Response Section Component for displaying hierarchical data.
 const ResponseSection = ({ title, data }) => {
   if (!data) return null;
 
@@ -216,9 +218,7 @@ const ResponseSection = ({ title, data }) => {
         <Typography sx={{ fontWeight: "medium" }}>{title}</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <Box>
-          {renderNestedObject(data)}
-        </Box>
+        <Box>{renderNestedObject(data)}</Box>
       </AccordionDetails>
     </Accordion>
   );
@@ -230,12 +230,11 @@ function Home() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
-  // Add new state for tracing functionality
   const [tracing, setTracing] = useState(false);
   const [traceMessages, setTraceMessages] = useState([]);
   const [requestStartTime, setRequestStartTime] = useState(null);
 
-  // Helper function to add trace messages with timestamps including milliseconds
+  // Helper function to add trace messages with timestamps including milliseconds.
   const addTrace = (message) => {
     if (tracing) {
       const now = new Date();
@@ -249,16 +248,14 @@ function Home() {
     }
   };
 
-  // Helper to add request summary
+  // Helper to add request summary.
   const addSummary = (success) => {
     if (tracing && requestStartTime) {
       const endTime = new Date();
       const duration = endTime - requestStartTime;
-
       const summary = success
         ? `Request completed successfully in ${duration}ms - Environment: ${env}, Status: Success`
         : `Request failed after ${duration}ms - Environment: ${env}, Status: Error`;
-
       addTrace(`SUMMARY: ${summary}`);
     }
   };
@@ -275,21 +272,16 @@ function Home() {
     setLoading(true);
     setResult(null);
     setError(null);
-
-    // Record start time for duration calculation
     const startTime = new Date();
     setRequestStartTime(startTime);
 
-    // Reset trace messages when starting a new request
     if (tracing) {
       setTraceMessages([]);
       addTrace("Process started - Preparing request");
     }
 
     if (env === "test") {
-      // Simulate a test call with static data.
       addTrace("Using test environment - Simulating API call");
-
       setTimeout(() => {
         addTrace("Test data received");
         addTrace("Processing test response data");
@@ -302,12 +294,10 @@ function Home() {
       }, 1000);
     } else {
       try {
-        // Real API call: use the X‑Cite API endpoint with the token as a path parameter.
         addTrace(
-          `Preparing API request with token: ${token.substring(
-            0,
-            3
-          )}...${token.substring(token.length - 3)}`
+          `Preparing API request with token: ${token.substring(0, 3)}...${token.substring(
+            token.length - 3
+          )}`
         );
         addTrace(
           `Sending request to: https://www.x-cite-web-stg.de:5000/api/protocol/data/${token}`
@@ -328,7 +318,6 @@ function Home() {
       } catch (err) {
         console.error("Error fetching data:", err);
         addTrace(`Error occurred: ${err.message}`);
-
         setError(
           err.response?.data?.msg
             ? `${err.response.data.msg}`
@@ -343,40 +332,30 @@ function Home() {
     }
   };
 
-  // Trace viewer component
+  // Trace viewer component.
   const TraceViewer = () => {
     if (!tracing || traceMessages.length === 0) return null;
-
-    // Find the summary message if it exists
     const summaryMessage = traceMessages.find((trace) =>
       trace.message.startsWith("SUMMARY:")
     );
-
-    // Get the last trace message time for display
     const lastMessage = traceMessages[traceMessages.length - 1];
     const lastTimestamp = lastMessage ? lastMessage.time : "";
-
-    // Get the total number of steps
     const totalSteps = traceMessages.length;
 
     return (
       <Card sx={{ mt: 3, mb: 2 }}>
         <CardContent sx={{ py: 1 }}>
           {summaryMessage ? (
-            // Compact single-line display with time
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
+                flexDirection: { xs: "column", sm: "row" },
               }}
             >
               <Box>
-                <Typography
-                  variant="body2"
-                  color="primary"
-                  sx={{ fontWeight: "medium" }}
-                >
+                <Typography variant="body2" color="primary" sx={{ fontWeight: "medium" }}>
                   {summaryMessage.message.substring(8)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -388,12 +367,12 @@ function Home() {
               </Typography>
             </Box>
           ) : (
-            // If no summary yet, show processing message with time
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
+                flexDirection: { xs: "column", sm: "row" },
               }}
             >
               <Box>
@@ -415,46 +394,31 @@ function Home() {
   // When results exist, display the result view; otherwise, show the form.
   if (result) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Paper sx={{ p: 4 }}>
+      <Container maxWidth="md" sx={{ py: { xs: 2, md: 4 }, px: { xs: 2, md: 4 } }}>
+        <Paper sx={{ p: { xs: 2, md: 4 } }}>
           <Typography variant="h4" align="center" gutterBottom>
             Background Check Results
           </Typography>
-          <Typography
-            variant="subtitle1"
-            align="center"
-            color="textSecondary"
-            gutterBottom
-          >
+          <Typography variant="subtitle1" align="center" color="textSecondary" gutterBottom>
             {env === "test" ? "Test Environment" : "Real Environment"} Results
           </Typography>
 
           {/* Display trace viewer if tracing is enabled */}
           <TraceViewer />
 
-          {/* Render each response section if available */}
           {result.data && (
             <>
-              <ResponseSection
-                title="Kaution Response"
-                data={result.data["Kaution Response"]}
-              />
-              <ResponseSection
-                title="Strom Response"
-                data={result.data["Strom Response"]}
-              />
-              <ResponseSection
-                title="Gas Response"
-                data={result.data["Gas Response"]}
-              />
+              <ResponseSection title="Kaution Response" data={result.data["Kaution Response"]} />
+              <ResponseSection title="Strom Response" data={result.data["Strom Response"]} />
+              <ResponseSection title="Gas Response" data={result.data["Gas Response"]} />
             </>
           )}
           <Box
             sx={{
               display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
               justifyContent: "space-between",
               mt: 4,
-              flexWrap: "wrap",
               gap: 2,
             }}
           >
@@ -462,7 +426,6 @@ function Home() {
               variant="outlined"
               startIcon={<RestartAltIcon />}
               onClick={() => {
-                // Reset to show the form again.
                 setResult(null);
                 setToken("");
                 if (tracing) {
@@ -499,19 +462,23 @@ function Home() {
   }
 
   return (
-    <Container maxWidth="sm" sx={{ py: 4 }}>
+    <Container maxWidth="sm" sx={{ py: { xs: 2, md: 4 }, px: { xs: 2, md: 4 } }}>
       <Typography variant="h4" align="center" gutterBottom>
         Tenant Background Check
       </Typography>
-      <Typography
-        variant="subtitle1"
-        align="center"
-        color="textSecondary"
-        gutterBottom
-      >
+      <Typography variant="subtitle1" align="center" color="textSecondary" gutterBottom>
         Enter your authentication token to check the protocol data.
       </Typography>
-      <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: "center",
+          mb: 3,
+          gap: 2,
+        }}
+      >
         <ToggleButtonGroup value={env} exclusive onChange={handleEnvChange}>
           <ToggleButton value="real">Real Environment</ToggleButton>
           <ToggleButton value="test">Test Environment</ToggleButton>
@@ -533,25 +500,11 @@ function Home() {
               required
             />
             <FormControlLabel
-              control={
-                <Switch
-                  checked={tracing}
-                  onChange={(e) => setTracing(e.target.checked)}
-                />
-              }
+              control={<Switch checked={tracing} onChange={(e) => setTracing(e.target.checked)} />}
               label="Enable request tracing"
             />
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={loading}
-              sx={{ height: "56px" }}
-            >
-              {loading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Check Background"
-              )}
+            <Button type="submit" variant="contained" disabled={loading} sx={{ height: "56px" }}>
+              {loading ? <CircularProgress size={24} color="inherit" /> : "Check Background"}
             </Button>
           </Box>
         </CardContent>
