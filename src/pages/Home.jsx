@@ -300,11 +300,11 @@ function Home() {
           )}`
         );
         addTrace(
-          `Sending request to: https://www.x-cite-web-stg.de:5000/api/protocol/data/${token}`
+          `Sending request to: https://www.x-cite-web.de:5000/api/protocol/data/${token}`
         );
 
         const response = await axios.get(
-          `https://www.x-cite-web-stg.de:5000/api/protocol/data/${token}`
+          `https://www.x-cite-web.de:5000/api/protocol/data/${token}`
         );
 
         addTrace("Response received successfully");
