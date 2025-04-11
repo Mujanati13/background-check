@@ -686,7 +686,7 @@ function Home() {
                   }}
                 >
                   <Typography variant="h6" sx={{ color: "#2e7d32" }}>
-                    kaution
+                  KautionFrei
                   </Typography>
                 </Box>
 
