@@ -752,7 +752,7 @@ function Home() {
                           {/* Status check button */}
                           <Box sx={{ mt: 3, mb: 2, display: 'flex', justifyContent: 'center' }}>
                             <Button 
-                              variant="outlined" 
+                              variant="contained" 
                               size="small"
                               onClick={() => checkApplicationStatus(burgschaftData.cid)}
                               disabled={statusLoading}
