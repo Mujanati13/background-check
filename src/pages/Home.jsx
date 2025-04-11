@@ -649,7 +649,7 @@ function Home() {
                     {burgschaftLoading ? (
                       <CircularProgress size={20} color="inherit" />
                     ) : (
-                      "to kaution"
+                      "Insert to KautionFrei"
                     )}
                   </Button>
                 </Box>
@@ -759,7 +759,7 @@ function Home() {
                               startIcon={statusLoading ? <CircularProgress size={16} /> : <CachedIcon />}
                               color="primary"
                             >
-                              {statusLoading ? "Checking..." : "Check Application Status"}
+                              {statusLoading ? "Checking..." : "Get Application Status"}
                             </Button>
                           </Box>
                           
@@ -804,7 +804,7 @@ function Home() {
                                 </Box>
                               </Typography>
                               
-                              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                              {/* <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
                                 <Button 
                                   size="small" 
                                   startIcon={<CachedIcon />} 
@@ -812,7 +812,7 @@ function Home() {
                                 >
                                   Refresh
                                 </Button>
-                              </Box>
+                              </Box> */}
                             </Box>
                           )}
                           
@@ -1002,7 +1002,7 @@ function Home() {
           <ToggleButton value="real">Real Environment</ToggleButton>
           {/* <ToggleButton value="test">Test Environment</ToggleButton> */}
         </ToggleButtonGroup>
-
+{/* 
         <FormControlLabel
           control={
             <Switch
@@ -1012,7 +1012,7 @@ function Home() {
             />
           }
           label="Enable tracing"
-        />
+        /> */}
       </Box>
       <Card sx={{ my: 4 }}>
         <CardContent>
