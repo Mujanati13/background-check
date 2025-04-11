@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import axios from "axios";
 import {
   Container,
@@ -19,18 +19,22 @@ import {
   Switch,
   FormControlLabel,
   Chip,
+  Fab
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import PrintIcon from "@mui/icons-material/Print";
 import EmailIcon from "@mui/icons-material/Email";
 import CachedIcon from "@mui/icons-material/Cached";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 // Sample test data for simulation based on the provided example
 const testData = {
   msg: "success",
   data: {
-    Wohnungsübergabeprotokoll: {
+    "Wohnungsübergabeprotokoll": {
       "Art der Übergabe": "Einzug",
       "Datum der Übergabe": "03.04.2025",
     },
@@ -159,6 +163,12 @@ function Home() {
   const [statusData, setStatusData] = useState(null);
   const [statusLoading, setStatusLoading] = useState(false);
   const [statusError, setStatusError] = useState(null);
+
+  // Setup theme and media query for mobile detection.
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  // Create a ref for the Kaution section.
+  const kautionSectionRef = useRef(null);
 
   // Helper function to add trace messages with timestamps including milliseconds.
   const addTrace = (message) => {
@@ -505,14 +515,14 @@ function Home() {
   // Helper function to get status color
   const getStatusColor = (state) => {
     switch (state) {
-      case 'accepted':
-        return 'success';
-      case 'pending':
-        return 'warning';
-      case 'rejected':
-        return 'error';
+      case "accepted":
+        return "success";
+      case "pending":
+        return "warning";
+      case "rejected":
+        return "error";
       default:
-        return 'default';
+        return "default";
     }
   };
 
@@ -585,274 +595,300 @@ function Home() {
     const dataKeys = result.data ? Object.keys(result.data) : [];
 
     return (
-      <Container
-        maxWidth="lg"
-        sx={{ py: { xs: 2, md: 4 }, px: { xs: 2, md: 4 } }}
-      >
-        <Paper sx={{ p: { xs: 2, md: 4 } }}>
-          <Typography variant="h6" align="center" gutterBottom>
-            Background Check Results
-          </Typography>
-          <Typography
-            variant="subtitle1"
-            align="center"
-            color="textSecondary"
-            gutterBottom
-          >
-            {env === "test" ? "Test Environment" : "Real Environment"} Results
-          </Typography>
-
-          {/* Display trace viewer if tracing is enabled */}
-          <TraceViewer />
-
-          {result.data && (
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: { xs: "column", md: "row" },
-                gap: 3,
-                mt: 3,
-              }}
+      <>
+        <Container
+          maxWidth="lg"
+          sx={{ py: { xs: 2, md: 4 }, px: { xs: 2, md: 4 } }}
+        >
+          <Paper sx={{ p: { xs: 2, md: 4 } }}>
+            <Typography variant="h6" align="center" gutterBottom>
+              Background Check Results
+            </Typography>
+            <Typography
+              variant="subtitle1"
+              align="center"
+              color="textSecondary"
+              gutterBottom
             >
-              {/* Right section - X-cite (now with all data) */}
-              <Box
-                sx={{
-                  flex: 1,
-                  bgcolor: "rgba(245, 245, 245, 0.5)",
-                  p: 2,
-                  borderRadius: 2,
-                  border: "1px solid #e0e0e0",
-                }}
-              >
-                <Box
-                  sx={{
-                    mb: 2,
-                    pb: 1,
-                    borderBottom: "1px solid #e0e0e0",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 2,
-                  }}
-                >
-                  <Typography variant="h6" sx={{ color: "#1976d2" }}>
-                    X-cite
-                  </Typography>
-                  <Button
-                    id="submit-xcite-button"
-                    variant="contained"
-                    color="primary"
-                    size="small"
-                    onClick={submitXCiteData}
-                    disabled={burgschaftLoading}
-                  >
-                    {burgschaftLoading ? (
-                      <CircularProgress size={20} color="inherit" />
-                    ) : (
-                      "Insert to KautionFrei"
-                    )}
-                  </Button>
-                </Box>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  {/* Render all sections in the X-cite column */}
-                  {dataKeys.map((key) => (
-                    <ResponseSection
-                      key={key}
-                      title={key}
-                      data={result.data[key]}
-                    />
-                  ))}
-                </Box>
-              </Box>
-              {/* Left section - kaution with Bürgschaft data */}
-              <Box
-                sx={{
-                  flex: 1,
-                  bgcolor: "rgba(245, 245, 245, 0.5)",
-                  p: 2,
-                  borderRadius: 2,
-                  border: "1px solid #e0e0e0",
-                }}
-              >
-                <Box
-                  sx={{
-                    mb: 2,
-                    pb: 1,
-                    borderBottom: "1px solid #e0e0e0",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 1,
-                  }}
-                >
-                  <Typography variant="h6" sx={{ color: "#2e7d32" }}>
-                  KautionFrei
-                  </Typography>
-                </Box>
+              {env === "test" ? "Test Environment" : "Real Environment"} Results
+            </Typography>
 
-                {/* Display Bürgschaft data or messages */}
-                {burgschaftLoading ? (
+            {/* Display trace viewer if tracing is enabled */}
+            <TraceViewer />
+
+            {result.data && (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: { xs: "column", md: "row" },
+                  gap: 3,
+                  mt: 3,
+                }}
+              >
+                {/* Right section - X-cite (now with all data) */}
+                <Box
+                  sx={{
+                    flex: 1,
+                    bgcolor: "rgba(245, 245, 245, 0.5)",
+                    p: 2,
+                    borderRadius: 2,
+                    border: "1px solid #e0e0e0",
+                  }}
+                >
                   <Box
-                    sx={{ display: "flex", justifyContent: "center", py: 4 }}
+                    sx={{
+                      mb: 2,
+                      pb: 1,
+                      borderBottom: "1px solid #e0e0e0",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 2,
+                    }}
                   >
-                    <CircularProgress />
-                  </Box>
-                ) : burgschaftData ? (
-                  <Box sx={{ p: 2 }}>
-                    <Typography
-                      variant="subtitle1"
-                      sx={{ mb: 2, fontWeight: "medium" }}
-                    >
-                      {burgschaftData.cid
-                        ? "Created Successfully"
-                        : "Validation Results"}
+                    <Typography variant="h6" sx={{ color: "#1976d2" }}>
+                      X-cite
                     </Typography>
-
-                    <Box sx={{ mb: 2 }}>
-                      {burgschaftData.cid && (
-                        <>
-                          <Typography
-                            variant="body2"
-                            sx={{ display: "flex", mb: 1 }}
-                          >
-                            <Box
-                              component="span"
-                              sx={{
-                                fontWeight: "medium",
-                                width: "40%",
-                                flexShrink: 0,
-                              }}
-                            >
-                              Contract ID:
-                            </Box>
-                            <Box component="span" sx={{ pl: 1 }}>
-                              {burgschaftData.cid}
-                            </Box>
-                          </Typography>
-
-                          <Typography
-                            variant="body2"
-                            sx={{ display: "flex", mb: 1 }}
-                          >
-                            <Box
-                              component="span"
-                              sx={{
-                                fontWeight: "medium",
-                                width: "40%",
-                                flexShrink: 0,
-                              }}
-                            >
-                              Next Step:
-                            </Box>
-                            <Box component="span" sx={{ pl: 1 }}>
-                              {burgschaftData.skip_to || "N/A"}
-                            </Box>
-                          </Typography>
-                          
-                          {/* Status check button */}
-                          <Box sx={{ mt: 3, mb: 2, display: 'flex', justifyContent: 'center' }}>
-                            <Button 
-                              variant="contained" 
-                              size="small"
-                              onClick={() => checkApplicationStatus(burgschaftData.cid)}
-                              disabled={statusLoading}
-                              startIcon={statusLoading ? <CircularProgress size={16} /> : <CachedIcon />}
-                              color="primary"
-                            >
-                              {statusLoading ? "Checking..." : "Get Application Status"}
-                            </Button>
-                          </Box>
-                          
-                          {/* Display status information */}
-                          {statusData && (
-                            <Box sx={{ mt: 3, p: 2, bgcolor: '#f8f8f8', borderRadius: 1, border: '1px solid #e0e0e0' }}>
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 'medium' }}>
-                                  Application Status
-                                </Typography>
-                                <Chip 
-                                  label={statusData.state} 
-                                  color={getStatusColor(statusData.state)}
-                                  size="small"
-                                />
-                              </Box>
-                              
-                              <Typography variant="body2" sx={{ display: "flex", mb: 0.5 }}>
-                                <Box component="span" sx={{ fontWeight: "medium", width: "40%", flexShrink: 0 }}>
-                                  Order ID:
-                                </Box>
-                                <Box component="span" sx={{ pl: 1 }}>
-                                  {statusData.orderId}
-                                </Box>
-                              </Typography>
-                              
-                              <Typography variant="body2" sx={{ display: "flex", mb: 0.5 }}>
-                                <Box component="span" sx={{ fontWeight: "medium", width: "40%", flexShrink: 0 }}>
-                                  Rate:
-                                </Box>
-                                <Box component="span" sx={{ pl: 1 }}>
-                                  {statusData.rate}€
-                                </Box>
-                              </Typography>
-                              
-                              <Typography variant="body2" sx={{ display: "flex", mb: 0.5 }}>
-                                <Box component="span" sx={{ fontWeight: "medium", width: "40%", flexShrink: 0 }}>
-                                  Digital:
-                                </Box>
-                                <Box component="span" sx={{ pl: 1 }}>
-                                  {statusData.digital === "true" ? "Yes" : "No"}
-                                </Box>
-                              </Typography>
-                              
-                              {/* <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-                                <Button 
-                                  size="small" 
-                                  startIcon={<CachedIcon />} 
-                                  onClick={() => checkApplicationStatus(burgschaftData.cid)}
-                                >
-                                  Refresh
-                                </Button>
-                              </Box> */}
-                            </Box>
-                          )}
-                          
-                          {statusError && (
-                            <Alert severity="error" sx={{ mt: 2 }}>
-                              {statusError}
-                            </Alert>
-                          )}
-                        </>
+                    <Button
+                      id="submit-xcite-button"
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      onClick={submitXCiteData}
+                      disabled={burgschaftLoading}
+                    >
+                      {burgschaftLoading ? (
+                        <CircularProgress size={20} color="inherit" />
+                      ) : (
+                        "Insert to KautionFrei"
                       )}
+                    </Button>
+                  </Box>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                    {/* Render all sections in the X-cite column */}
+                    {dataKeys.map((key) => (
+                      <ResponseSection key={key} title={key} data={result.data[key]} />
+                    ))}
+                  </Box>
+                </Box>
+                {/* Left section - kaution with Bürgschaft data */}
+                <Box
+                  ref={kautionSectionRef}
+                  sx={{
+                    flex: 1,
+                    bgcolor: "rgba(245, 245, 245, 0.5)",
+                    p: 2,
+                    borderRadius: 2,
+                    border: "1px solid #e0e0e0",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      mb: 2,
+                      pb: 1,
+                      borderBottom: "1px solid #e0e0e0",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 1,
+                    }}
+                  >
+                    <Typography variant="h6" sx={{ color: "#2e7d32" }}>
+                      KautionFrei
+                    </Typography>
+                  </Box>
 
-                      {/* Display structured validation errors */}
-                      {burgschaftData.formattedErrors &&
-                        burgschaftData.formattedErrors.length > 0 && (
-                          <Box sx={{ mt: 2 }}>
+                  {/* Display Bürgschaft data or messages */}
+                  {burgschaftLoading ? (
+                    <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                      <CircularProgress />
+                    </Box>
+                  ) : burgschaftData ? (
+                    <Box sx={{ p: 2 }}>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ mb: 2, fontWeight: "medium" }}
+                      >
+                        {burgschaftData.cid
+                          ? "Created Successfully"
+                          : "Validation Results"}
+                      </Typography>
+
+                      <Box sx={{ mb: 2 }}>
+                        {burgschaftData.cid && (
+                          <>
                             <Typography
-                              variant="subtitle2"
-                              sx={{ color: "error.main", mb: 1 }}
+                              variant="body2"
+                              sx={{ display: "flex", mb: 1 }}
                             >
-                              Validation Errors:
+                              <Box
+                                component="span"
+                                sx={{
+                                  fontWeight: "medium",
+                                  width: "40%",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                Contract ID:
+                              </Box>
+                              <Box component="span" sx={{ pl: 1 }}>
+                                {burgschaftData.cid}
+                              </Box>
                             </Typography>
-                            <Box
-                              sx={{ bgcolor: "#ffebee", p: 2, borderRadius: 1 }}
+
+                            <Typography
+                              variant="body2"
+                              sx={{ display: "flex", mb: 1 }}
                             >
-                              {burgschaftData.formattedErrors.map(
-                                (error, index) => (
+                              <Box
+                                component="span"
+                                sx={{
+                                  fontWeight: "medium",
+                                  width: "40%",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                Next Step:
+                              </Box>
+                              <Box component="span" sx={{ pl: 1 }}>
+                                {burgschaftData.skip_to || "N/A"}
+                              </Box>
+                            </Typography>
+
+                            {/* Status check button */}
+                            <Box
+                              sx={{
+                                mt: 3,
+                                mb: 2,
+                                display: "flex",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <Button
+                                variant="contained"
+                                size="small"
+                                onClick={() => checkApplicationStatus(burgschaftData.cid)}
+                                disabled={statusLoading}
+                                startIcon={
+                                  statusLoading ? <CircularProgress size={16} /> : <CachedIcon />
+                                }
+                                color="primary"
+                              >
+                                {statusLoading ? "Checking..." : "Get Application Status"}
+                              </Button>
+                            </Box>
+
+                            {/* Display status information */}
+                            {statusData && (
+                              <Box
+                                sx={{
+                                  mt: 3,
+                                  p: 2,
+                                  bgcolor: "#f8f8f8",
+                                  borderRadius: 1,
+                                  border: "1px solid #e0e0e0",
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    mb: 2,
+                                  }}
+                                >
+                                  <Typography variant="subtitle2" sx={{ fontWeight: "medium" }}>
+                                    Application Status
+                                  </Typography>
+                                  <Chip
+                                    label={statusData.state}
+                                    color={getStatusColor(statusData.state)}
+                                    size="small"
+                                  />
+                                </Box>
+
+                                <Typography variant="body2" sx={{ display: "flex", mb: 0.5 }}>
+                                  <Box
+                                    component="span"
+                                    sx={{
+                                      fontWeight: "medium",
+                                      width: "40%",
+                                      flexShrink: 0,
+                                    }}
+                                  >
+                                    Order ID:
+                                  </Box>
+                                  <Box component="span" sx={{ pl: 1 }}>
+                                    {statusData.orderId}
+                                  </Box>
+                                </Typography>
+
+                                <Typography variant="body2" sx={{ display: "flex", mb: 0.5 }}>
+                                  <Box
+                                    component="span"
+                                    sx={{
+                                      fontWeight: "medium",
+                                      width: "40%",
+                                      flexShrink: 0,
+                                    }}
+                                  >
+                                    Rate:
+                                  </Box>
+                                  <Box component="span" sx={{ pl: 1 }}>
+                                    {statusData.rate}€
+                                  </Box>
+                                </Typography>
+
+                                <Typography variant="body2" sx={{ display: "flex", mb: 0.5 }}>
+                                  <Box
+                                    component="span"
+                                    sx={{
+                                      fontWeight: "medium",
+                                      width: "40%",
+                                      flexShrink: 0,
+                                    }}
+                                  >
+                                    Digital:
+                                  </Box>
+                                  <Box component="span" sx={{ pl: 1 }}>
+                                    {statusData.digital === "true" ? "Yes" : "No"}
+                                  </Box>
+                                </Typography>
+                              </Box>
+                            )}
+
+                            {statusError && (
+                              <Alert severity="error" sx={{ mt: 2 }}>
+                                {statusError}
+                              </Alert>
+                            )}
+                          </>
+                        )}
+
+                        {/* Display structured validation errors */}
+                        {burgschaftData.formattedErrors &&
+                          burgschaftData.formattedErrors.length > 0 && (
+                            <Box sx={{ mt: 2 }}>
+                              <Typography
+                                variant="subtitle2"
+                                sx={{ color: "error.main", mb: 1 }}
+                              >
+                                Validation Errors:
+                              </Typography>
+                              <Box sx={{ bgcolor: "#ffebee", p: 2, borderRadius: 1 }}>
+                                {burgschaftData.formattedErrors.map((error, index) => (
                                   <Box
                                     key={index}
                                     sx={{
                                       mb: 2,
                                       pb:
                                         index <
-                                        burgschaftData.formattedErrors.length -
-                                          1
+                                        burgschaftData.formattedErrors.length - 1
                                           ? 2
                                           : 0,
                                       borderBottom:
                                         index <
-                                        burgschaftData.formattedErrors.length -
-                                          1
+                                        burgschaftData.formattedErrors.length - 1
                                           ? "1px solid #ffcdd2"
                                           : "none",
                                     }}
@@ -892,83 +928,101 @@ function Home() {
                                       </Typography>
                                     )}
                                   </Box>
-                                )
-                              )}
+                                ))}
+                              </Box>
                             </Box>
-                          </Box>
-                        )}
+                          )}
 
-                      {/* Keep original array error format handling for backward compatibility */}
-                      {burgschaftData.errors &&
-                        Array.isArray(burgschaftData.errors) &&
-                        burgschaftData.errors.length > 0 && (
-                          <Box sx={{ mt: 2 }}>
-                            <Typography
-                              variant="subtitle2"
-                              sx={{ color: "error.main", mb: 1 }}
-                            >
-                              Validation Errors:
-                            </Typography>
-                            <ul
-                              style={{ paddingLeft: "20px", margin: "8px 0" }}
-                            >
-                              {burgschaftData.errors.map((error, index) => (
-                                <li key={index}>
-                                  <Typography variant="body2" color="error">
-                                    {error}
-                                  </Typography>
-                                </li>
-                              ))}
-                            </ul>
-                          </Box>
-                        )}
+                        {/* Keep original array error format handling for backward compatibility */}
+                        {burgschaftData.errors &&
+                          Array.isArray(burgschaftData.errors) &&
+                          burgschaftData.errors.length > 0 && (
+                            <Box sx={{ mt: 2 }}>
+                              <Typography
+                                variant="subtitle2"
+                                sx={{ color: "error.main", mb: 1 }}
+                              >
+                                Validation Errors:
+                              </Typography>
+                              <ul style={{ paddingLeft: "20px", margin: "8px 0" }}>
+                                {burgschaftData.errors.map((error, index) => (
+                                  <li key={index}>
+                                    <Typography variant="body2" color="error">
+                                      {error}
+                                    </Typography>
+                                  </li>
+                                ))}
+                              </ul>
+                            </Box>
+                          )}
+                      </Box>
                     </Box>
-                  </Box>
-                ) : burgschaftError ? (
-                  <Alert severity="error" sx={{ m: 2 }}>
-                    {burgschaftError}
-                  </Alert>
-                ) : (
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ textAlign: "center", py: 2 }}
-                  >
-                    Click "to kaution" to create a Bürgschaft
-                  </Typography>
-                )}
+                  ) : burgschaftError ? (
+                    <Alert severity="error" sx={{ m: 2 }}>
+                      {burgschaftError}
+                    </Alert>
+                  ) : (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ textAlign: "center", py: 2 }}
+                    >
+                      Click "to kaution" to create a Bürgschaft
+                    </Typography>
+                  )}
+                </Box>
               </Box>
-            </Box>
-          )}
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: { xs: "column", sm: "row" },
-              justifyContent: "space-between",
-              mt: 4,
-              gap: 2,
-            }}
-          >
-            <Button
-              variant="outlined"
-              startIcon={<RestartAltIcon />}
-              onClick={() => {
-                setResult(null);
-                setToken("");
-                setBurgschaftData(null);
-                setBurgschaftError(null);
-                setStatusData(null);
-                setStatusError(null);
-                if (tracing) {
-                  addTrace("Reset application state - returning to form");
-                }
+            )}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                justifyContent: "space-between",
+                mt: 4,
+                gap: 2,
               }}
             >
-              New Check
-            </Button>
-          </Box>
-        </Paper>
-      </Container>
+              <Button
+                variant="outlined"
+                startIcon={<RestartAltIcon />}
+                onClick={() => {
+                  setResult(null);
+                  setToken("");
+                  setBurgschaftData(null);
+                  setBurgschaftError(null);
+                  setStatusData(null);
+                  setStatusError(null);
+                  if (tracing) {
+                    addTrace("Reset application state - returning to form");
+                  }
+                }}
+              >
+                New Check
+              </Button>
+            </Box>
+          </Paper>
+        </Container>
+        {/* Floating Action Button for mobile users */}
+        {isMobile && (
+          <Fab
+            color="primary"
+            aria-label="go-to-kaution"
+            onClick={() => {
+              if (kautionSectionRef.current) {
+                kautionSectionRef.current.scrollIntoView({ behavior: "smooth" });
+              }
+            }}
+            sx={{
+              position: "fixed",
+              bottom: 16,
+              right: 16,
+              zIndex: 2000,
+            }}
+          >
+            <KeyboardArrowDownIcon />
+          </Fab>
+        )}
+      </>
     );
   }
 
@@ -1002,7 +1056,7 @@ function Home() {
           <ToggleButton value="real">Real Environment</ToggleButton>
           {/* <ToggleButton value="test">Test Environment</ToggleButton> */}
         </ToggleButtonGroup>
-{/* 
+        {/* 
         <FormControlLabel
           control={
             <Switch
