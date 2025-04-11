@@ -74,51 +74,6 @@ const testData = {
   },
 };
 
-// JSON Viewer component for displaying X-cite data
-const JsonViewer = ({ data, title, statusData }) => {
-  if (!data) return null;
-  
-  // Create a copy of the data to display
-  let displayData = { ...data };
-  
-  // Add status data if available
-  if (statusData) {
-    displayData = {
-      ...displayData,
-      ApplicationStatus: {
-        state: statusData.state,
-        orderId: statusData.orderId,
-        rate: statusData.rate,
-        digital: statusData.digital
-      }
-    };
-  }
-  
-  const prettyJson = JSON.stringify(displayData, null, 2);
-  
-  return (
-    <Accordion sx={{ mt: 2 }} defaultExpanded={true}>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography sx={{ fontWeight: "medium" }}>{title}</Typography>
-      </AccordionSummary>
-      <AccordionDetails>
-        <Box 
-          sx={{ 
-            fontFamily: 'monospace',
-            bgcolor: '#f5f5f5',
-            p: 1.5,
-            borderRadius: 1,
-            overflowX: 'auto',
-            fontSize: '0.85rem'
-          }}
-        >
-          <pre style={{ margin: 0 }}>{prettyJson}</pre>
-        </Box>
-      </AccordionDetails>
-    </Accordion>
-  );
-};
-
 // Helper function to render nested objects recursively with responsive spacing.
 const renderNestedObject = (obj, level = 0) => {
   if (!obj || typeof obj !== "object") return null;
@@ -244,6 +199,7 @@ function Home() {
     
     setStatusLoading(true);
     setStatusError(null);
+    setStatusData(null);
     
     addTrace(`Checking application status for CID: ${cid}`);
     
@@ -487,12 +443,6 @@ function Home() {
             );
           }
         }
-        
-        // Automatically check application status if CID exists
-        if (response.data.cid) {
-          addTrace("Automatically checking application status");
-          await checkApplicationStatus(response.data.cid);
-        }
       } else {
         addTrace("Received empty response");
         setBurgschaftError("No data received from server");
@@ -643,7 +593,15 @@ function Home() {
           <Typography variant="h6" align="center" gutterBottom>
             Background Check Results
           </Typography>
-         
+          <Typography
+            variant="subtitle1"
+            align="center"
+            color="textSecondary"
+            gutterBottom
+          >
+            {env === "test" ? "Test Environment" : "Real Environment"} Results
+          </Typography>
+
           {/* Display trace viewer if tracing is enabled */}
           <TraceViewer />
 
@@ -656,7 +614,7 @@ function Home() {
                 mt: 3,
               }}
             >
-              {/* Right section - X-cite data in JSON format */}
+              {/* Right section - X-cite (now with all data) */}
               <Box
                 sx={{
                   flex: 1,
@@ -695,16 +653,17 @@ function Home() {
                     )}
                   </Button>
                 </Box>
-                <Box sx={{ mt: 2 }}>
-                  {/* Display the data as JSON with status appended */}
-                  <JsonViewer 
-                    data={result.data} 
-                    title="Complete Data" 
-                    statusData={statusData}
-                  />
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  {/* Render all sections in the X-cite column */}
+                  {dataKeys.map((key) => (
+                    <ResponseSection
+                      key={key}
+                      title={key}
+                      data={result.data[key]}
+                    />
+                  ))}
                 </Box>
               </Box>
-              
               {/* Left section - kaution with Bürgschaft data */}
               <Box
                 sx={{
@@ -790,16 +749,21 @@ function Home() {
                             </Box>
                           </Typography>
                           
-                          {/* Status information section */}
-                          {statusLoading && (
-                            <Box sx={{ mt: 3, textAlign: "center" }}>
-                              <CircularProgress size={24} />
-                              <Typography variant="body2" sx={{ mt: 1 }}>
-                                Checking application status...
-                              </Typography>
-                            </Box>
-                          )}
+                          {/* Status check button */}
+                          <Box sx={{ mt: 3, mb: 2, display: 'flex', justifyContent: 'center' }}>
+                            <Button 
+                              variant="outlined" 
+                              size="small"
+                              onClick={() => checkApplicationStatus(burgschaftData.cid)}
+                              disabled={statusLoading}
+                              startIcon={statusLoading ? <CircularProgress size={16} /> : <CachedIcon />}
+                              color="primary"
+                            >
+                              {statusLoading ? "Checking..." : "Check Application Status"}
+                            </Button>
+                          </Box>
                           
+                          {/* Display status information */}
                           {statusData && (
                             <Box sx={{ mt: 3, p: 2, bgcolor: '#f8f8f8', borderRadius: 1, border: '1px solid #e0e0e0' }}>
                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -845,9 +809,8 @@ function Home() {
                                   size="small" 
                                   startIcon={<CachedIcon />} 
                                   onClick={() => checkApplicationStatus(burgschaftData.cid)}
-                                  disabled={statusLoading}
                                 >
-                                  Refresh Status
+                                  Refresh
                                 </Button>
                               </Box>
                             </Box>
@@ -1040,7 +1003,7 @@ function Home() {
           {/* <ToggleButton value="test">Test Environment</ToggleButton> */}
         </ToggleButtonGroup>
 
-        {/* <FormControlLabel
+        <FormControlLabel
           control={
             <Switch
               checked={tracing}
@@ -1049,7 +1012,7 @@ function Home() {
             />
           }
           label="Enable tracing"
-        /> */}
+        />
       </Box>
       <Card sx={{ my: 4 }}>
         <CardContent>
