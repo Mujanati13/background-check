@@ -660,24 +660,7 @@ function Home() {
               </Typography>
             </Box>
           ) : (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                flexDirection: { xs: "column", sm: "row" },
-              }}
-            >
-              <Box>
-                <Typography variant="body2">Processing request...</Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Last update at {lastTimestamp}
-                </Typography>
-              </Box>
-              <Typography variant="body2" color="text.secondary">
-                {traceMessages.length} steps completed
-              </Typography>
-            </Box>
+          ""
           )}
         </CardContent>
       </Card>
