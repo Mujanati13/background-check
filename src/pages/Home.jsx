@@ -19,7 +19,8 @@ import {
   Switch,
   FormControlLabel,
   Chip,
-  Fab
+  Fab,
+  LinearProgress
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
@@ -27,6 +28,7 @@ import PrintIcon from "@mui/icons-material/Print";
 import EmailIcon from "@mui/icons-material/Email";
 import CachedIcon from "@mui/icons-material/Cached";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import TimerIcon from "@mui/icons-material/Timer";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
@@ -154,7 +156,7 @@ function Home() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
-  const [tracing, setTracing] = useState(false);
+  const [tracing, setTracing] = useState(true); // Set tracing to true by default for better feedback
   const [traceMessages, setTraceMessages] = useState([]);
   const [requestStartTime, setRequestStartTime] = useState(null);
   const [burgschaftData, setBurgschaftData] = useState(null);
@@ -163,6 +165,7 @@ function Home() {
   const [statusData, setStatusData] = useState(null);
   const [statusLoading, setStatusLoading] = useState(false);
   const [statusError, setStatusError] = useState(null);
+  const [countdown, setCountdown] = useState(null); // Add countdown state
 
   // Setup theme and media query for mobile detection.
   const theme = useTheme();
@@ -203,7 +206,70 @@ function Home() {
     }
   };
 
-  // Check application status using CID
+  // Helper function to wait a specific amount of time
+  const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  // Function to poll application status with retries - AUTOMATIC STATUS CHECKING
+  async function pollApplicationStatus(cid, maxAttempts = 3) {
+    if (!cid) return;
+    
+    addTrace(`📊 STARTING AUTOMATIC STATUS POLLING for CID: ${cid}`);
+    setStatusLoading(true);
+    
+    let attempts = 0;
+    let accepted = false;
+    
+    while (attempts < maxAttempts && !accepted) {
+      attempts++;
+      
+      try {
+        // Wait 5 seconds before checking status
+        addTrace(`⏱️ Waiting 5 seconds before status check (attempt ${attempts}/${maxAttempts})...`);
+        await wait(5000);
+        
+        addTrace(`🔍 Checking application status for CID: ${cid} (attempt ${attempts}/${maxAttempts})`);
+        
+        const response = await axios.get(
+          `https://api.stage.kautionsfrei.de/api/application/state/${cid}`
+        );
+        
+        if (response.data) {
+          addTrace(`✅ Status retrieved: ${response.data.state}`);
+          setStatusData(response.data);
+          
+          // If the application is accepted, stop polling
+          if (response.data.state === "accepted") {
+            addTrace(`🎉 Application ACCEPTED! Stopping status checks.`);
+            accepted = true;
+            break;
+          } else if (response.data.state === "rejected") {
+            addTrace(`❌ Application REJECTED. Stopping status checks.`);
+            break;
+          } else {
+            addTrace(`⏳ Status is "${response.data.state}". Will check again in 5 seconds.`);
+          }
+        } else {
+          addTrace("❓ Received empty status response");
+          setStatusError("No status data received");
+          break;
+        }
+      } catch (err) {
+        console.error("Error fetching application status:", err);
+        addTrace(`❌ Status check error: ${err.message}`);
+        setStatusError(err.response?.data?.msg || "Failed to retrieve application status");
+        
+        // If it's the last attempt, show the error
+        if (attempts === maxAttempts) {
+          setStatusError(`Failed to get status after ${maxAttempts} attempts: ${err.message}`);
+        }
+      }
+    }
+    
+    setStatusLoading(false);
+    addTrace(`🏁 Automatic status polling complete (${attempts} attempts)`);
+  }
+
+  // Check application status using CID (manual check)
   async function checkApplicationStatus(cid) {
     if (!cid) return;
     
@@ -298,7 +364,6 @@ function Home() {
     }
   };
 
-  // Function to submit X-cite data to the API
   async function submitXCiteData() {
     // Reset previous results
     setBurgschaftData(null);
@@ -306,16 +371,17 @@ function Home() {
     setBurgschaftLoading(true);
     setStatusData(null);
     setStatusError(null);
-
+    setCountdown(null); // Reset countdown
+  
     try {
       // Disable the button to prevent multiple submissions
       const submitButton = document.getElementById("submit-xcite-button");
       if (submitButton) {
         submitButton.disabled = true;
       }
-
-      addTrace("Preparing data for Bürgschaft creation");
-
+  
+      addTrace("🚀 STEP 1: Preparing data for Bürgschaft creation");
+  
       const mappedData = {
         product: "kfde_06_2020",
         partnerCode: "mr",
@@ -325,10 +391,8 @@ function Home() {
           gender: result.data.Vermieter?.Anrede === "Herr" ? "male" : "female",
           address: {
             street: result.data.Vermieter?.Strasse || "",
-            // Fix: Ensure streetNumber is valid - use only numeric part if available, otherwise use "1"
             streetNumber: (() => {
               const rawNumber = result.data.Vermieter?.Hausnummer || "";
-              // Extract only numbers and possibly a single letter (e.g., "12a")
               const match = rawNumber.match(/^(\d+[a-zA-Z]?)/);
               return match ? match[0].substring(0, 5) : "1";
             })(),
@@ -340,7 +404,6 @@ function Home() {
           gender: result.data.Mieter?.Anrede === "Herr" ? "male" : "female",
           firstName: result.data.Mieter?.Vorname || "",
           name: result.data.Mieter?.Name || "",
-          // Fix: Format phone number to remove spaces
           phone: (
             result.data.Mieter?.["Mobile Nummer"] ||
             result.data.Mieter?.Rufnummer ||
@@ -376,10 +439,8 @@ function Home() {
             signedAt:
               result.data.Wohnungsübergabeprotokoll?.["Datum der Übergabe"] ||
               "",
-            // Fix: Set movedInAt to a future date (not more than 180 days in the future)
             movedInAt: (() => {
               const futureDate = new Date();
-              // Set to 90 days in future (well within 180 day limit)
               futureDate.setDate(futureDate.getDate() + 90);
               return `${futureDate.getDate().toString().padStart(2, "0")}.${(
                 futureDate.getMonth() + 1
@@ -398,39 +459,32 @@ function Home() {
         },
         step: "check",
       };
-      addTrace(
-        `Sending request to create Bürgschaft: ${JSON.stringify(
-          mappedData,
-          null,
-          2
-        )}`
-      );
-
-      // Make API call to create Bürgschaft
+      
+      // STEP 2: Submit data via POST request to create Bürgschaft
+      addTrace("🚀 STEP 2: POST request to create Bürgschaft starting...");
       const response = await axios.post(
         "https://api.stage.kautionsfrei.de/api/tenancies",
         mappedData
       );
-
+  
       if (response.data) {
-        addTrace(
-          `created successfully. CID: ${response.data.cid || "N/A"}`
-        );
+        addTrace(`✅ Bürgschaft created successfully. CID: ${response.data.cid || "N/A"}`);
+        
+        // Immediately update UI with the response data
         setBurgschaftData(response.data);
-
-        // Handle structured errors format in the response
+        setBurgschaftLoading(false);
+        
+        // Handle errors if any
         if (response.data.errors) {
           // Check if errors is an object with field keys (structured format)
           if (
             typeof response.data.errors === "object" &&
             !Array.isArray(response.data.errors)
           ) {
-            addTrace(
-              `Response contained validation errors for ${
-                Object.keys(response.data.errors).length
-              } fields`
-            );
-
+            addTrace(`❌ Response contained validation errors for ${
+              Object.keys(response.data.errors).length
+            } fields`);
+  
             // Store the structured errors for display
             setBurgschaftData((prevData) => ({
               ...prevData,
@@ -448,24 +502,64 @@ function Home() {
             Array.isArray(response.data.errors) &&
             response.data.errors.length > 0
           ) {
-            addTrace(
-              `Response contained ${response.data.errors.length} validation errors`
-            );
+            addTrace(`❌ Response contained ${response.data.errors.length} validation errors`);
           }
         }
+        
+        // STEP 3: Wait 5 seconds before checking status (if CID is available)
+        if (response.data.cid) {
+          addTrace(`⏱️ STEP 3: Waiting 5 seconds before checking status...`);
+          
+          // Set up countdown from 5 to 0
+          setCountdown(5);
+          
+          // Wait 5 seconds with visual countdown
+          for (let i = 5; i > 0; i--) {
+            setCountdown(i);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+          setCountdown(0);
+          
+          // STEP 4: Now check status
+          addTrace(`🔍 STEP 4: Checking application status for CID: ${response.data.cid}`);
+          setStatusLoading(true);
+          
+          try {
+            const statusResponse = await axios.get(
+              `https://api.stage.kautionsfrei.de/api/application/state/${response.data.cid}`
+            );
+            
+            if (statusResponse.data) {
+              addTrace(`✅ Status retrieved: ${statusResponse.data.state}`);
+              setStatusData(statusResponse.data);
+            } else {
+              addTrace("❓ Received empty status response");
+              setStatusError("No status data received");
+            }
+          } catch (statusErr) {
+            console.error("Error fetching application status:", statusErr);
+            addTrace(`❌ Status check error: ${statusErr.message}`);
+            setStatusError(statusErr.response?.data?.msg || "Failed to retrieve application status");
+          } finally {
+            setStatusLoading(false);
+            setCountdown(null); // Reset countdown when done
+          }
+        } else {
+          addTrace("⚠️ No CID received, cannot check application status");
+        }
       } else {
-        addTrace("Received empty response");
+        addTrace("❌ Received empty response");
         setBurgschaftError("No data received from server");
       }
     } catch (err) {
       console.error("Error creating Bürgschaft:", err);
-
+  
       // Handle different types of errors
       if (err.response) {
         // The server responded with an error status code
         const statusCode = err.response.status;
         let errorMessage = err.response.data?.msg || "Unknown server error";
-
+  
         // Check for structured errors in the error response
         if (
           err.response.data?.errors &&
@@ -476,7 +570,7 @@ function Home() {
           errorMessage = `Validation failed for ${
             errorFields.length
           } field(s): ${errorFields.join(", ")}`;
-
+  
           // Store the structured errors for display
           setBurgschaftData({
             formattedErrors: Object.entries(err.response.data.errors).map(
@@ -488,18 +582,18 @@ function Home() {
             ),
           });
         }
-
-        addTrace(`Server error (${statusCode}): ${errorMessage}`);
+  
+        addTrace(`❌ Server error (${statusCode}): ${errorMessage}`);
         setBurgschaftError(`Server error (${statusCode}): ${errorMessage}`);
       } else if (err.request) {
         // The request was made but no response was received
-        addTrace("No response received from server");
+        addTrace("❌ No response received from server");
         setBurgschaftError(
           "No response from server. Please check your connection."
         );
       } else {
         // Error in setting up the request
-        addTrace(`Request error: ${err.message}`);
+        addTrace(`❌ Request error: ${err.message}`);
         setBurgschaftError(`Request failed: ${err.message}`);
       }
     } finally {
@@ -509,6 +603,7 @@ function Home() {
         submitButton.disabled = false;
       }
       setBurgschaftLoading(false);
+      setCountdown(null); // Ensure countdown is reset
     }
   }
 
@@ -755,28 +850,56 @@ function Home() {
                               </Box>
                             </Typography>
 
-                            {/* Status check button */}
-                            <Box
-                              sx={{
-                                mt: 3,
-                                mb: 2,
-                                display: "flex",
-                                justifyContent: "center",
-                              }}
-                            >
-                              <Button
-                                variant="contained"
-                                size="small"
-                                onClick={() => checkApplicationStatus(burgschaftData.cid)}
-                                disabled={statusLoading}
-                                startIcon={
-                                  statusLoading ? <CircularProgress size={16} /> : <CachedIcon />
-                                }
-                                color="primary"
+                            {/* Display countdown timer if active */}
+                            {countdown !== null && (
+                              <Box 
+                                sx={{
+                                  mt: 3,
+                                  mb: 2,
+                                  p: 2,
+                                  border: '1px solid #e0e0e0',
+                                  borderRadius: 1,
+                                  bgcolor: '#f5f5f5',
+                                }}
                               >
-                                {statusLoading ? "Checking..." : "Get Application Status"}
-                              </Button>
-                            </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                  <TimerIcon fontSize="small" color="primary" />
+                                  <Typography variant="body2" color="primary" fontWeight="medium">
+                                    Checking application status in {countdown} seconds...
+                                  </Typography>
+                                </Box>
+                                <LinearProgress 
+                                  variant="determinate" 
+                                  value={(5 - countdown) * 20} 
+                                  sx={{ height: 8, borderRadius: 4 }}
+                                />
+                              </Box>
+                            )}
+
+                            {/* Status check button (now optional since auto-checking is implemented) */}
+                            {!countdown && (
+                              <Box
+                                sx={{
+                                  mt: 3,
+                                  mb: 2,
+                                  display: "flex",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <Button
+                                  variant="contained"
+                                  size="small"
+                                  onClick={() => checkApplicationStatus(burgschaftData.cid)}
+                                  disabled={statusLoading}
+                                  startIcon={
+                                    statusLoading ? <CircularProgress size={16} /> : <CachedIcon />
+                                  }
+                                  color="primary"
+                                >
+                                  {statusLoading ? "Checking..." : "Check Status Again"}
+                                </Button>
+                              </Box>
+                            )}
 
                             {/* Display status information */}
                             {statusData && (
@@ -967,7 +1090,7 @@ function Home() {
                       color="text.secondary"
                       sx={{ textAlign: "center", py: 2 }}
                     >
-                      Click "to kaution" to create a Bürgschaft
+                      Click "Insert to KautionFrei" to create a Bürgschaft
                     </Typography>
                   )}
                 </Box>
@@ -992,6 +1115,7 @@ function Home() {
                   setBurgschaftError(null);
                   setStatusData(null);
                   setStatusError(null);
+                  setCountdown(null);
                   if (tracing) {
                     addTrace("Reset application state - returning to form");
                   }
