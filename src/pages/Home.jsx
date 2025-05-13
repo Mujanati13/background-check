@@ -230,7 +230,7 @@ function Home() {
         addTrace(`🔍 Checking application status for CID: ${cid} (attempt ${attempts}/${maxAttempts})`);
         
         const response = await axios.get(
-          `https://api.stage.kautionsfrei.de/api/application/state/${cid}`
+          `https://api.kautionsfrei.de/api/application/state/${cid}`
         );
         
         if (response.data) {
@@ -281,7 +281,7 @@ function Home() {
     
     try {
       const response = await axios.get(
-        `https://api.stage.kautionsfrei.de/api/application/state/${cid}`
+        `https://api.kautionsfrei.de/api/application/state/${cid}`
       );
       
       if (response.data) {
@@ -463,7 +463,7 @@ function Home() {
       // STEP 2: Submit data via POST request to create Bürgschaft
       addTrace("🚀 STEP 2: POST request to create Bürgschaft starting...");
       const response = await axios.post(
-        "https://api.stage.kautionsfrei.de/api/tenancies",
+        "https://api.kautionsfrei.de/api/tenancies",
         mappedData
       );
   
@@ -526,7 +526,7 @@ function Home() {
           
           try {
             const statusResponse = await axios.get(
-              `https://api.stage.kautionsfrei.de/api/application/state/${response.data.cid}`
+              `https://api.kautionsfrei.de/api/application/state/${response.data.cid}`
             );
             
             if (statusResponse.data) {
